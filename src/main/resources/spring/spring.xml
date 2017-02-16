@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans default-lazy-init="true"
+	xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+				       http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+				       http://www.springframework.org/schema/context
+				       http://www.springframework.org/schema/context/spring-context-4.1.xsd
+				       http://www.springframework.org/schema/tx
+				       http://www.springframework.org/schema/tx/spring-tx-4.1.xsd 
+				       http://www.springframework.org/schema/aop
+				       http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+				       http://www.springframework.org/schema/task
+				       http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+	<!-- proptery 配置 -->
+	<context:property-placeholder location="classpath:config/db.properties" />
+
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+
+
+	<import resource="spring-mybatis.xml"/>
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+
+	<!--<task:scheduled-tasks>-->
+		<!--&lt;!&ndash;每天0点&ndash;&gt;-->
+		<!--<task:scheduled ref="updateTask" method="updateSurplusUnsend" cron="0 0 0 * * ?"/>-->
+		<!--&lt;!&ndash;每十五分钟&ndash;&gt;-->
+		<!--<task:scheduled ref="updateTask" method="task1" cron="0 0/15 * * * ? "/>-->
+		<!--&lt;!&ndash;每10分钟执行一次&ndash;&gt;-->
+		<!--<task:scheduled ref="updateTask" method="updataRotationList" cron="0 0/10 * * * ? "/>-->
+	<!--</task:scheduled-tasks>-->
+
+
+
+	<!-- 配置线程池 -->
+	<bean id ="taskExecutor"  class ="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" >
+		<!-- 线程池维护线程的最少数量 -->
+		<property name ="corePoolSize" value ="20" />
+		<!-- 线程池维护线程所允许的空闲时间   单位毫秒-->
+		<property name ="keepAliveSeconds" value ="30000" />
+		<!-- 线程池维护线程的最大数量 -->
+		<property name ="maxPoolSize" value ="5000" />
+		<!-- 线程池所使用的缓冲队列 -->
+		<property name ="queueCapacity" value ="1000" />
+	</bean>
+
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name = "dataSource" ref="dataSource"/>
+	</bean>
+
+	<!-- 基于注解的声明式事务管理配置 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 开启事务注解支持 -->
+	<tx:annotation-driven transaction-manager="txManager" />
+
+
+
+</beans>

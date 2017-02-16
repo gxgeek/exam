@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-4.1.xsd 
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context-4.1.xsd
+						http://www.springframework.org/schema/mvc 
+						http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd 
+						http://www.springframework.org/schema/websocket
+						http://www.springframework.org/schema/task 
+     					http://www.springframework.org/schema/task/spring-task-4.1.xsd
+     					http://www.springframework.org/schema/websocket/spring-websocket-4.1.xsd
+     					http://www.springframework.org/schema/aop
+      					http://www.springframework.org/schema/aop/spring-aop-4.1.xsd">
+
+	<mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
+		<mvc:message-converters register-defaults="true">
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+		    	<constructor-arg value="UTF-8" />
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+
+
+
+	<!--内容协商 -->
+	<bean id="contentNegotiationManager"  class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<!-- 扩展名至mimeType的映射,即 /.json => application/json -->
+		<property name="favorPathExtension" value="true" />
+		<!-- 用于开启 /userinfo/123?format=json 的支持 -->
+		<property name="favorParameter" value="true" />
+		<property name="parameterName" value="format" />
+		<!-- 是否忽略Accept Header -->
+		<property name="ignoreAcceptHeader" value="false" />
+		<property name="mediaTypes">
+			<map>
+				<entry key="json" value="application/json" />
+				<entry key="xml" value="application/xml" />
+			</map>
+		</property>
+		<!-- 默认的content type -->
+		<property name="defaultContentType" value="text/html" />
+	</bean>
+
+
+	<!-- freeMarker -->
+	<bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+		<property name="templateLoaderPath" value="/template" />
+		<property name="freemarkerSettings">
+			<props>
+				<prop key="template_update_delay">0</prop>
+				<prop key="default_encoding">UTF-8</prop>
+				<!-- 开启FreeMarker的传统模式，自动忽略空值 -->
+				<prop key="classic_compatible">true</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- freeMarker  解析 -->
+	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="viewResolvers">
+			<list>
+				<bean id="viewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+					<property name="cache" value="true" />
+					<property name="prefix" value="" />
+					<property name="suffix" value=".ftl" />
+					<property name="contentType" value="text/html; charset=utf-8" />
+					<property name="viewClass" value="com.gx.extend.MyFreeMarkerView" />
+				</bean>
+			</list>
+		</property>
+		<property name="defaultViews">
+			<list>
+				<!-- JSON -->
+				<bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+				<!-- XML -->
+				<bean class="org.springframework.web.servlet.view.xml.MarshallingView">
+					<property name="marshaller">
+						<bean class="org.springframework.oxm.xstream.XStreamMarshaller" />
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	<!-- 使用Annotation自动注册Bean,只扫描@Controller -->
+	<context:component-scan base-package="com.gx" use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<!--<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>-->
+	</context:component-scan>
+
+	<!--静态资源映射 -->
+	<!--<mvc:resources location="js/**" mapping="/js/**"></mvc:resources>-->
+	<!--<mvc:resources location="css/**" mapping="/css/**"></mvc:resources>-->
+	<!--<mvc:resources location="image/" mapping="/image/**"></mvc:resources>-->
+	<!--<mvc:resources location="template/include/**" mapping="/include/**"></mvc:resources>-->
+
+
+	<!-- 定义无Controller的path<->view直接映射 -->
+	<!--<mvc:resources mapping="/static/**" location="/static/" />-->
+
+	<!-- SPRING上传配置 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding">
+			<value>UTF-8</value>
+		</property>
+		<property name="maxUploadSize">
+			<value>1048576000000</value><!-- 上传文件大小限制为10M，10*1024*1024 -->
+		</property>
+		<property name="maxInMemorySize">
+			<value>409600000</value>
+		</property>
+	</bean>
+</beans>

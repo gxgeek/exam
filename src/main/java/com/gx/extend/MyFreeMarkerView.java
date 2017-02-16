@@ -1,0 +1,20 @@
+package com.gx.extend;
+
+import org.springframework.web.servlet.view.freemarker.FreeMarkerView;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
+/**
+ * Created by gx on 2016/12/24.
+ */
+public class MyFreeMarkerView extends FreeMarkerView{
+    private static final String CONTEXT_PATH = "base";
+    @Override
+    protected void exposeHelpers(Map<String, Object> model,
+                                 HttpServletRequest request) throws Exception {
+        model.put(CONTEXT_PATH, request.getContextPath());
+        super.exposeHelpers(model, request);
+    }
+
+}

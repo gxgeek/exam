@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gx.dao.TrxMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		 id, contentId, personId, price, time, buy_num AS buyNum
+	</sql>
+
+	<select id="selectAccountByUid" resultType="java.util.HashMap">
+		SELECT
+			t1.contentId AS id,
+			t2.title,
+			t2.icon as image,
+			t1.price AS buyPrice,
+			t1.time AS buyTime
+		FROM
+			trx t1
+		LEFT JOIN content t2
+			ON t1.contentId = t2.id
+		WHERE
+			t1.personId = #{uid}
+	</select>
+</mapper>

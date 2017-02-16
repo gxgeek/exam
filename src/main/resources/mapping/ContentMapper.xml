@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gx.dao.ContentMapper">
+
+	<!-- 通用查询结果列-->
+	<sql id="Base_Column_List">
+		 id, price, title, icon, summary, text
+	</sql>
+	<select id="selectProduct" resultType="java.util.Map">
+		SELECT *
+		FROM
+		(
+		SELECT
+		content.id,
+		content.title,
+		content.icon AS image,
+		content.price,
+		IF (trx.contentId, TRUE, FALSE) AS isSell,
+		IF (trx.personId = 2, TRUE, FALSE) AS isBuy
+		FROM
+		content
+		LEFT JOIN trx ON content.id = trx.contentId
+		) 	t1
+		<if test="type!=null">
+		where t1.isBuy = 0
+		</if>
+	</select>
+
+	<select id="selectProductByUid" resultType="java.util.HashMap">
+		SELECT
+		content.id,
+		content.title,
+		content.icon AS image,
+		content.summary,
+		content.price,
+		content.text,
+		trx.price as buyPrice,
+		IF (trx.contentId, TRUE, FALSE) AS isSell,
+		IF (trx.personId = #{uid}, TRUE, FALSE) AS isBuy,
+		IF (trx.buy_num, trx.buy_num, 1) AS buyNum
+		FROM
+		content
+		LEFT JOIN trx ON content.id = trx.contentId
+		WHERE  content.id = #{id}
+	</select>
+
+
+</mapper>
